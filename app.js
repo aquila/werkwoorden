@@ -160,11 +160,18 @@
     el.scoreTxt.textContent = '✓ ' + quiz.correct + '  ✗ ' + quiz.wrong;
     el.progressBar.style.width = (quiz.index / quiz.items.length * 100) + '%';
 
-    // Focus eerste zichtbare veld
-    setTimeout(() => {
-      if (!el.fieldOvt.classList.contains('hidden')) el.inputOvt.focus();
-      else el.inputVd.focus();
-    }, 50);
+    // Focus telkens het eerste zichtbare (lege) invulveld,
+    // zodat oplossen met enkel het toetsenbord vlotter gaat.
+    focusFirstEmptyField();
+  }
+
+  function focusFirstEmptyField() {
+    const candidates = [];
+    if (!el.fieldOvt.classList.contains('hidden')) candidates.push(el.inputOvt);
+    if (!el.fieldVd.classList.contains('hidden'))  candidates.push(el.inputVd);
+    const target = candidates.find(i => !i.disabled && !i.value) || candidates[0];
+    if (!target) return;
+    requestAnimationFrame(() => target.focus());
   }
 
   function checkAnswer(e) {
@@ -214,10 +221,8 @@
         el.inputVd.classList.add('warn');
         el.inputVd.value = '';
       }
-      setTimeout(() => {
-        if (needOvt && !ovtOk) el.inputOvt.focus();
-        else if (needVd && !vdOk) el.inputVd.focus();
-      }, 50);
+      // Zet focus op het foute veld zodat verder oplossen met het toetsenbord vlot verloopt.
+      focusFirstEmptyField();
       return;
     }
 
