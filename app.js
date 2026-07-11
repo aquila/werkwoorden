@@ -139,8 +139,9 @@
     const item = quiz.items[quiz.index];
     const v = item.verb;
     el.infinitief.textContent = v.infinitief;
-    el.verbType.textContent = v.type || '';
-    el.verbType.style.display = v.type ? '' : 'none';
+    // Geen sterk/zwak/onregelmatig label tonen bij de vraag — dat maakt het te gemakkelijk.
+    el.verbType.textContent = '';
+    el.verbType.style.display = 'none';
 
     el.inputOvt.value = '';
     el.inputVd.value = '';
