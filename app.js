@@ -72,9 +72,11 @@
   }
 
   // Antwoord kan meerdere geldige varianten hebben, gescheiden door "/" of ","
+  // Als het juiste antwoord "-" is (bestaat niet), dan is een leeg antwoord ook goed.
   function isCorrect(userAnswer, correctAnswer) {
     const u = normalize(userAnswer);
-    if (!u) return false;
+    const noAnswer = normalize(correctAnswer) === '-';
+    if (!u) return noAnswer;
     const variants = correctAnswer.split(/[\/,]/).map(normalize).filter(Boolean);
     return variants.includes(u);
   }
