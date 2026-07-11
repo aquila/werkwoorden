@@ -72,9 +72,11 @@
   }
 
   // Antwoord kan meerdere geldige varianten hebben, gescheiden door "/" of ","
+  // Als het juiste antwoord "-" is (bestaat niet), dan is een leeg antwoord ook goed.
   function isCorrect(userAnswer, correctAnswer) {
     const u = normalize(userAnswer);
-    if (!u) return false;
+    const noAnswer = normalize(correctAnswer) === '-';
+    if (!u) return noAnswer;
     const variants = correctAnswer.split(/[\/,]/).map(normalize).filter(Boolean);
     return variants.includes(u);
   }
@@ -137,8 +139,9 @@
     const item = quiz.items[quiz.index];
     const v = item.verb;
     el.infinitief.textContent = v.infinitief;
-    el.verbType.textContent = v.type || '';
-    el.verbType.style.display = v.type ? '' : 'none';
+    // Geen sterk/zwak/onregelmatig label tonen bij de vraag — dat maakt het te gemakkelijk.
+    el.verbType.textContent = '';
+    el.verbType.style.display = 'none';
 
     el.inputOvt.value = '';
     el.inputVd.value = '';
@@ -157,11 +160,18 @@
     el.scoreTxt.textContent = '✓ ' + quiz.correct + '  ✗ ' + quiz.wrong;
     el.progressBar.style.width = (quiz.index / quiz.items.length * 100) + '%';
 
-    // Focus eerste zichtbare veld
-    setTimeout(() => {
-      if (!el.fieldOvt.classList.contains('hidden')) el.inputOvt.focus();
-      else el.inputVd.focus();
-    }, 50);
+    // Focus telkens het eerste zichtbare (lege) invulveld,
+    // zodat oplossen met enkel het toetsenbord vlotter gaat.
+    focusFirstEmptyField();
+  }
+
+  function focusFirstEmptyField() {
+    const candidates = [];
+    if (!el.fieldOvt.classList.contains('hidden')) candidates.push(el.inputOvt);
+    if (!el.fieldVd.classList.contains('hidden'))  candidates.push(el.inputVd);
+    const target = candidates.find(i => !i.disabled && !i.value) || candidates[0];
+    if (!target) return;
+    requestAnimationFrame(() => target.focus());
   }
 
   function checkAnswer(e) {
@@ -211,10 +221,8 @@
         el.inputVd.classList.add('warn');
         el.inputVd.value = '';
       }
-      setTimeout(() => {
-        if (needOvt && !ovtOk) el.inputOvt.focus();
-        else if (needVd && !vdOk) el.inputVd.focus();
-      }, 50);
+      // Zet focus op het foute veld zodat verder oplossen met het toetsenbord vlot verloopt.
+      focusFirstEmptyField();
       return;
     }
 
