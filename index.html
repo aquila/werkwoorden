@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Werkwoorden" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Werkwoorden oefenen</title>
+</head>
+<body>
+  <main id="app">
+    <!-- Start scherm -->
+    <section id="screen-start" class="screen active">
+      <h1>📚 Werkwoorden</h1>
+      <p class="lead">Oefen de verleden tijden van Nederlandse sterke en zwakke werkwoorden.</p>
+      <div class="options">
+        <label>
+          Aantal werkwoorden
+          <select id="select-count">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="all">Alles</option>
+          </select>
+        </label>
+        <label>
+          Wat oefenen?
+          <select id="select-mode">
+            <option value="both" selected>o.v.t. + voltooid deelwoord</option>
+            <option value="ovt">Alleen o.v.t.</option>
+            <option value="vd">Alleen voltooid deelwoord</option>
+          </select>
+        </label>
+      </div>
+      <button id="btn-start" class="primary big">Start oefening</button>
+      <p class="muted" id="load-status">Werkwoorden laden…</p>
+    </section>
+
+    <!-- Quiz scherm -->
+    <section id="screen-quiz" class="screen">
+      <header class="quiz-header">
+        <div class="progress"><div id="progress-bar"></div></div>
+        <div class="meta">
+          <span id="progress-text">1 / 20</span>
+          <span id="score-text">✓ 0  ✗ 0</span>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="prompt-line">
+          <span class="label">Infinitief</span>
+          <span id="infinitief" class="infinitief">—</span>
+          <span id="verb-type" class="badge">—</span>
+        </div>
+        <div class="prompt-line">
+          <span class="label" id="ask-label">Geef de verleden tijd</span>
+        </div>
+
+        <form id="answer-form" autocomplete="off">
+          <div class="field">
+            <label for="input-ovt">O.v.t. (enkelvoud, ik-vorm)</label>
+            <input id="input-ovt" type="text" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="bv. liep" />
+          </div>
+          <div class="field">
+            <label for="input-vd">Voltooid deelwoord</label>
+            <input id="input-vd" type="text" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="bv. gelopen" />
+          </div>
+          <button id="btn-check" type="submit" class="primary big">Controleer</button>
+        </form>
+
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+        <button id="btn-next" class="primary big hidden">Volgende ▸</button>
+      </div>
+    </section>
+
+    <!-- Resultaat scherm -->
+    <section id="screen-result" class="screen">
+      <h1 id="result-emoji">🎉</h1>
+      <h2 id="result-title">Goed gedaan!</h2>
+      <div class="score-box">
+        <div class="big-score" id="big-score">0%</div>
+        <div class="score-detail" id="score-detail">0 van 0 juist</div>
+        <div class="score-comment" id="score-comment"></div>
+      </div>
+
+      <h3 id="mistakes-title">Fouten</h3>
+      <ul id="mistakes-list" class="mistakes"></ul>
+
+      <div class="actions">
+        <button id="btn-again" class="primary big">Opnieuw</button>
+        <button id="btn-home" class="secondary">Naar start</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
