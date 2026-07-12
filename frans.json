@@ -37,6 +37,8 @@
     { "infinitif": "vendre",     "nl": "verkopen",          "present": { "1s": "vends",    "2s": "vends",    "3s": "vend",      "1p": "vendons",     "2p": "vendez",     "3p": "vendent" } },
     { "infinitif": "perdre",     "nl": "verliezen",         "present": { "1s": "perds",    "2s": "perds",    "3s": "perd",      "1p": "perdons",     "2p": "perdez",     "3p": "perdent" } },
     { "infinitif": "rire",       "nl": "lachen",            "present": { "1s": "ris",      "2s": "ris",      "3s": "rit",       "1p": "rions",       "2p": "riez",       "3p": "rient" } },
-    { "infinitif": "plaire",     "nl": "bevallen",          "present": { "1s": "plais",    "2s": "plais",    "3s": "plaît",     "1p": "plaisons",    "2p": "plaisez",    "3p": "plaisent" } }
+    { "infinitif": "plaire",     "nl": "bevallen",          "present": { "1s": "plais",    "2s": "plais",    "3s": "plaît",     "1p": "plaisons",    "2p": "plaisez",    "3p": "plaisent" } },
+    { "infinitif": "parler",     "nl": "spreken/praten",    "present": { "1s": "parle",    "2s": "parles",   "3s": "parle",     "1p": "parlons",     "2p": "parlez",     "3p": "parlent" } },
+    { "infinitif": "se laver",   "nl": "zich wassen",       "present": { "1s": "me lave",  "2s": "te laves", "3s": "se lave",   "1p": "nous lavons", "2p": "vous lavez", "3p": "se lavent" } }
   ]
 }
