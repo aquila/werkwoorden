@@ -11,6 +11,21 @@ op een iPhone en kan als app op je beginscherm worden geplaatst.
 3. Bij een fout krijg je **één extra poging**. Bij de tweede fout toont de app het juiste antwoord.
 4. Op het einde krijg je een **overzicht van je fouten** en een **toffe score** met commentaar.
 
+## 🇫🇷 Franse werkwoorden
+
+Er is ook een aparte pagina om de vervoeging (présent) van de meest courante
+onregelmatige Franse werkwoorden te oefenen — open [`frans.html`](./frans.html)
+of gebruik de link op de startpagina.
+
+- Je krijgt een Nederlands werkwoord (bv. *willen*), de Franse infinitief
+  (*vouloir*) en een persoon (bv. *tu* — 2e persoon enkelvoud) te zien en typt
+  de juiste vervoeging (*veux*).
+- De vragen dekken alle zes personen (je / tu / il‑elle / nous / vous / ils‑elles).
+- Dezelfde regels: **twee pogingen**, en bij een fout krijg je meteen de
+  **volledige vervoegingstabel** te zien.
+- De lijst staat in [`frans.json`](./frans.json) — elk werkwoord bevat de
+  Nederlandse betekenis, de Franse infinitief en alle zes vormen van de présent.
+
 ## Lokaal draaien
 
 Omdat de app `fetch` en een service worker gebruikt, moet je hem via een
@@ -42,10 +57,13 @@ Meerdere geldige antwoorden mogen gescheiden worden met `/` of `,`
 
 | Bestand | Rol |
 |---|---|
-| `index.html` | UI (start, quiz, resultaat) |
-| `style.css` | Mobile-first styling |
-| `app.js` | Quiz-logica (2 pogingen, score, fouten) |
-| `werkwoorden.json` | Lijst met werkwoorden |
+| `index.html` | UI Nederlandse werkwoorden (start, quiz, resultaat) |
+| `frans.html` | UI Franse werkwoorden (start, quiz, resultaat) |
+| `style.css` | Mobile-first styling (gedeeld) |
+| `app.js` | Quiz-logica NL (2 pogingen, score, fouten) |
+| `frans.js` | Quiz-logica FR (2 pogingen, volledige vervoegingstabel bij fout) |
+| `werkwoorden.json` | Lijst met Nederlandse werkwoorden |
+| `frans.json` | Lijst met Franse onregelmatige werkwoorden + présent-vervoeging |
 | `manifest.webmanifest` | PWA-manifest |
 | `sw.js` | Service worker (offline gebruik) |
 | `icons/` | App-iconen (192, 512, maskable) |

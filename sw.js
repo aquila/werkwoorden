@@ -1,11 +1,14 @@
 /* Service worker voor Werkwoorden PWA */
-const CACHE = 'werkwoorden-v1';
+const CACHE = 'werkwoorden-v2';
 const ASSETS = [
   './',
   './index.html',
+  './frans.html',
   './style.css',
   './app.js',
+  './frans.js',
   './werkwoorden.json',
+  './frans.json',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -33,7 +36,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Network-first voor de werkwoordenlijst, cache-first voor de rest
-  if (url.pathname.endsWith('/werkwoorden.json')) {
+  if (url.pathname.endsWith('/werkwoorden.json') || url.pathname.endsWith('/frans.json')) {
     event.respondWith(
       fetch(req)
         .then((res) => {
