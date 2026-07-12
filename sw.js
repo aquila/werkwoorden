@@ -1,5 +1,5 @@
 /* Service worker voor Werkwoorden PWA */
-const CACHE = 'werkwoorden-v3';
+const CACHE = 'werkwoorden-v4';
 const ASSETS = [
   './',
   './index.html',

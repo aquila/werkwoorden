@@ -72,15 +72,14 @@
     return a;
   }
 
-  // Normaliseer voor vergelijking: lowercase, trim, diakritische tekens weg,
-  // en optioneel voorvoegsel-voornaamwoord (je/j'/tu/il/elle/on/nous/vous/ils/elles) weghalen.
+  // Normaliseer voor vergelijking: lowercase, trim en witruimte inklappen.
+  // Diacritische tekens blijven bewaard — die MOETEN kloppen.
   function normalize(s) {
     return (s || '')
       .toString()
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, ' ')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      .replace(/\s+/g, ' ');
   }
 
   function stripPronoun(s) {
@@ -98,13 +97,12 @@
     return variants.includes(u);
   }
 
-  // Strikte vergelijking voor Franse infinitief: lowercase + trim,
-  // maar diacritische tekens (é, è, ê, ç, î, …) MOETEN kloppen.
+  // Strikte vergelijking voor de Franse infinitief: lowercase + trim,
+  // diacritische tekens moeten kloppen en geen voornaamwoord-tolerantie.
   function isCorrectStrict(userAnswer, correctAnswer) {
-    const u = (userAnswer || '').toString().toLowerCase().trim().replace(/\s+/g, ' ');
+    const u = normalize(userAnswer);
     if (!u) return false;
-    const c = (correctAnswer || '').toString().toLowerCase().trim().replace(/\s+/g, ' ');
-    return u === c;
+    return u === normalize(correctAnswer);
   }
 
   // ---------- Laden ----------
@@ -277,7 +275,7 @@
     item.attempts++;
     if (item.attempts === 1) {
       el.feedback.className = 'feedback show warn';
-      el.feedback.innerHTML = '⚠️ <strong>Bijna!</strong> Nog één poging.';
+      el.feedback.innerHTML = '⚠️ <strong>Bijna!</strong> Let ook op de diacritische tekens (é, è, ê, ç…). Nog één poging.';
       el.inputAnswer.classList.remove('wrong');
       el.inputAnswer.classList.add('warn');
       el.inputAnswer.value = '';
