@@ -21,6 +21,13 @@
       <p class="lead">Oefen de vervoeging (présent) van de meest courante onregelmatige Franse werkwoorden.</p>
       <div class="options">
         <label>
+          Wat oefenen?
+          <select id="select-mode">
+            <option value="conjugation" selected>Vervoeging (présent)</option>
+            <option value="infinitive">Infinitief NL → FR</option>
+          </select>
+        </label>
+        <label>
           Aantal vragen
           <select id="select-count">
             <option value="10">10</option>
@@ -50,11 +57,11 @@
           <span class="label">Nederlands</span>
           <span id="nl-verb" class="infinitief">—</span>
         </div>
-        <div class="prompt-line">
+        <div class="prompt-line" id="row-fr-infinitif">
           <span class="label">Frans (infinitief)</span>
           <span id="fr-infinitif" class="fr-inf">—</span>
         </div>
-        <div class="prompt-line">
+        <div class="prompt-line" id="row-person">
           <span class="label">Persoon</span>
           <span id="person-label" class="person">—</span>
         </div>

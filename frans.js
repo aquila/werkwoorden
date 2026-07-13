@@ -13,6 +13,7 @@
     loadStatus:   $('load-status'),
     btnStart:     $('btn-start'),
     selCount:     $('select-count'),
+    selMode:      $('select-mode'),
 
     progressBar:  $('progress-bar'),
     progressTxt:  $('progress-text'),
@@ -20,6 +21,9 @@
     nlVerb:       $('nl-verb'),
     frInfinitif:  $('fr-infinitif'),
     personLabel:  $('person-label'),
+    rowFrInf:     $('row-fr-infinitif'),
+    rowPerson:    $('row-person'),
+    answerLabel:  $('answer-label'),
     form:         $('answer-form'),
     inputAnswer:  $('input-answer'),
     btnCheck:     $('btn-check'),
@@ -68,15 +72,14 @@
     return a;
   }
 
-  // Normaliseer voor vergelijking: lowercase, trim, diakritische tekens weg,
-  // en optioneel voorvoegsel-voornaamwoord (je/j'/tu/il/elle/on/nous/vous/ils/elles) weghalen.
+  // Normaliseer voor vergelijking: lowercase, trim en witruimte inklappen.
+  // Diacritische tekens blijven bewaard — die MOETEN kloppen.
   function normalize(s) {
     return (s || '')
       .toString()
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, ' ')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      .replace(/\s+/g, ' ');
   }
 
   function stripPronoun(s) {
@@ -92,6 +95,14 @@
     if (!u) return false;
     const variants = correctAnswer.split(/[\/,]/).map(v => stripPronoun(normalize(v))).filter(Boolean);
     return variants.includes(u);
+  }
+
+  // Strikte vergelijking voor de Franse infinitief: lowercase + trim,
+  // diacritische tekens moeten kloppen en geen voornaamwoord-tolerantie.
+  function isCorrectStrict(userAnswer, correctAnswer) {
+    const u = normalize(userAnswer);
+    if (!u) return false;
+    return u === normalize(correctAnswer);
   }
 
   // ---------- Laden ----------
@@ -112,19 +123,25 @@
   }
 
   // ---------- Quiz besturing ----------
-  function buildQuestions(count) {
-    // Kies willekeurige (werkwoord, persoon) combinaties zonder herhaling.
-    const combos = [];
-    for (const v of allVerbs) {
-      for (const p of PERSONS) {
-        combos.push({ verb: v, person: p });
+  function buildQuestions(count, mode) {
+    let pool;
+    if (mode === 'infinitive') {
+      // Één vraag per werkwoord: NL infinitief → FR infinitief.
+      pool = allVerbs.map(v => ({ verb: v }));
+    } else {
+      // Kies willekeurige (werkwoord, persoon) combinaties zonder herhaling.
+      pool = [];
+      for (const v of allVerbs) {
+        for (const p of PERSONS) {
+          pool.push({ verb: v, person: p });
+        }
       }
     }
-    const shuffled = shuffle(combos);
+    const shuffled = shuffle(pool);
     const n = count === 'all' ? shuffled.length : Math.min(parseInt(count, 10), shuffled.length);
     return shuffled.slice(0, n).map(c => ({
       verb: c.verb,
-      person: c.person,
+      person: c.person || null,
       attempts: 0,
       status: 'pending',
       userAnswer: '',
@@ -132,8 +149,9 @@
   }
 
   function startQuiz() {
-    const items = buildQuestions(el.selCount.value);
-    quiz = { items, index: 0, correct: 0, wrong: 0, mistakes: [] };
+    const mode = (el.selMode && el.selMode.value) || 'conjugation';
+    const items = buildQuestions(el.selCount.value, mode);
+    quiz = { mode, items, index: 0, correct: 0, wrong: 0, mistakes: [] };
     show('quiz');
     renderQuestion();
   }
@@ -144,13 +162,24 @@
     const p = item.person;
 
     el.nlVerb.textContent = v.nl;
-    el.frInfinitif.textContent = v.infinitif;
-    el.personLabel.textContent = p.pronoun + '  (' + p.label + ')';
+
+    if (quiz.mode === 'infinitive') {
+      el.rowFrInf.classList.add('hidden');
+      el.rowPerson.classList.add('hidden');
+      el.answerLabel.textContent = 'Geef de Franse infinitief';
+      el.inputAnswer.placeholder = 'bv. être';
+    } else {
+      el.rowFrInf.classList.remove('hidden');
+      el.rowPerson.classList.remove('hidden');
+      el.frInfinitif.textContent = v.infinitif;
+      el.personLabel.textContent = p.pronoun + '  (' + p.label + ')';
+      el.answerLabel.textContent = 'Geef de vervoeging';
+      el.inputAnswer.placeholder = 'vervoeging na "' + p.pronoun + '"';
+    }
 
     el.inputAnswer.value = '';
     el.inputAnswer.classList.remove('ok', 'wrong', 'warn');
     el.inputAnswer.disabled = false;
-    el.inputAnswer.placeholder = 'vervoeging na "' + p.pronoun + '"';
 
     el.feedback.textContent = '';
     el.feedback.className = 'feedback';
@@ -182,11 +211,53 @@
     const item = quiz.items[quiz.index];
     const v = item.verb;
     const p = item.person;
-    const correctForm = v.present[p.key];
 
     const userAnswer = el.inputAnswer.value;
     item.userAnswer = userAnswer;
 
+    if (quiz.mode === 'infinitive') {
+      const correctForm = v.infinitif;
+      const ok = isCorrectStrict(userAnswer, correctForm);
+      el.inputAnswer.classList.add(ok ? 'ok' : 'wrong');
+
+      if (ok) {
+        item.status = 'correct';
+        quiz.correct++;
+        el.feedback.className = 'feedback show good';
+        el.feedback.innerHTML = '✅ <strong>Juist!</strong> ' +
+          escapeHtml(v.nl) + ' → <em>' + escapeHtml(correctForm) + '</em>';
+        lockAndAdvance();
+        return;
+      }
+
+      item.attempts++;
+      if (item.attempts === 1) {
+        el.feedback.className = 'feedback show warn';
+        el.feedback.innerHTML = '⚠️ <strong>Bijna!</strong> Let ook op de diacritische tekens (é, è, ê, ç…). Nog één poging.';
+        el.inputAnswer.classList.remove('wrong');
+        el.inputAnswer.classList.add('warn');
+        el.inputAnswer.value = '';
+        requestAnimationFrame(() => el.inputAnswer.focus());
+        return;
+      }
+
+      item.status = 'wrong';
+      quiz.wrong++;
+      quiz.mistakes.push({
+        mode: 'infinitive',
+        nl: v.nl,
+        infinitif: v.infinitif,
+        userAnswer: item.userAnswer,
+        correctForm: correctForm,
+      });
+      el.feedback.className = 'feedback show bad';
+      el.feedback.innerHTML = '❌ <strong>Fout.</strong> Het juiste antwoord is: ' +
+        '<strong>' + escapeHtml(correctForm) + '</strong>';
+      lockAndAdvance();
+      return;
+    }
+
+    const correctForm = v.present[p.key];
     const ok = isCorrect(userAnswer, correctForm);
     el.inputAnswer.classList.add(ok ? 'ok' : 'wrong');
 
@@ -204,7 +275,7 @@
     item.attempts++;
     if (item.attempts === 1) {
       el.feedback.className = 'feedback show warn';
-      el.feedback.innerHTML = '⚠️ <strong>Bijna!</strong> Nog één poging.';
+      el.feedback.innerHTML = '⚠️ <strong>Bijna!</strong> Let ook op de diacritische tekens (é, è, ê, ç…). Nog één poging.';
       el.inputAnswer.classList.remove('wrong');
       el.inputAnswer.classList.add('warn');
       el.inputAnswer.value = '';
@@ -216,6 +287,7 @@
     item.status = 'wrong';
     quiz.wrong++;
     quiz.mistakes.push({
+      mode: 'conjugation',
       nl: v.nl,
       infinitif: v.infinitif,
       personShort: p.short,
@@ -281,13 +353,23 @@
       el.mistakesTitle.textContent = 'Fouten (' + quiz.mistakes.length + ')';
       quiz.mistakes.forEach(m => {
         const li = document.createElement('li');
-        const parts = [
-          '<div class="m-inf">' + escapeHtml(m.nl) + ' → <em>' + escapeHtml(m.infinitif) + '</em> <span class="badge">' + escapeHtml(m.personShort) + '</span></div>',
-          '<div class="m-row"><span>' + escapeHtml(m.pronoun) + '</span>' +
-            (m.userAnswer ? '<span class="wrong-a">' + escapeHtml(m.userAnswer) + '</span>' : '<span class="wrong-a">(leeg)</span>') +
-            '<span class="right-a">' + escapeHtml(m.correctForm) + '</span></div>',
-          '<div class="conj-wrap">' + conjugationTableHtml({ present: m.present }, m.personKey) + '</div>'
-        ];
+        let parts;
+        if (m.mode === 'infinitive') {
+          parts = [
+            '<div class="m-inf">' + escapeHtml(m.nl) + ' → <em>' + escapeHtml(m.infinitif) + '</em></div>',
+            '<div class="m-row"><span>NL → FR</span>' +
+              (m.userAnswer ? '<span class="wrong-a">' + escapeHtml(m.userAnswer) + '</span>' : '<span class="wrong-a">(leeg)</span>') +
+              '<span class="right-a">' + escapeHtml(m.correctForm) + '</span></div>'
+          ];
+        } else {
+          parts = [
+            '<div class="m-inf">' + escapeHtml(m.nl) + ' → <em>' + escapeHtml(m.infinitif) + '</em> <span class="badge">' + escapeHtml(m.personShort) + '</span></div>',
+            '<div class="m-row"><span>' + escapeHtml(m.pronoun) + '</span>' +
+              (m.userAnswer ? '<span class="wrong-a">' + escapeHtml(m.userAnswer) + '</span>' : '<span class="wrong-a">(leeg)</span>') +
+              '<span class="right-a">' + escapeHtml(m.correctForm) + '</span></div>',
+            '<div class="conj-wrap">' + conjugationTableHtml({ present: m.present }, m.personKey) + '</div>'
+          ];
+        }
         li.innerHTML = parts.join('');
         el.mistakesList.appendChild(li);
       });
